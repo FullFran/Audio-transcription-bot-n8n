@@ -33,7 +33,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer <YOUR GROQ APY KEY"
+              "value": "Bearer <YOUR GROQ APY KEY>"
             }
           ]
         },
@@ -79,7 +79,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/file/bot<YOUR BOT TOKEN/{{ $json.result.file_path }}",
+        "url": "=https://api.telegram.org/file/bot<YOUR BOT TOKEN>/{{ $json.result.file_path }}",
         "options": {}
       },
       "id": "ba9e3459-81ed-450f-acb0-db74fcb76540",
@@ -93,7 +93,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.telegram.org/botYOUR BOT TOKEN/getFile?file_id={{ $json.message.audio.file_id }}",
+        "url": "=https://api.telegram.org/bot<YOUR BOT TOKEN>/getFile?file_id={{ $json.message.audio.file_id }}",
         "options": {}
       },
       "id": "263e071d-ad62-4735-86ae-1b052e440379",
