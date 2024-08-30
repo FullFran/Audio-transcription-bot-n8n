@@ -1,0 +1,560 @@
+{
+  "name": "transcriptor 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "8919bc84-4e5a-427b-b077-7889d88af462",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        780
+      ],
+      "webhookId": "f3929975-9ebc-48ec-b348-71b9bb423c63",
+      "credentials": {
+        "telegramApi": {
+          "id": "N0pcO6gXBJY08bqd",
+          "name": "Transcriber"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "=file",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "17b2ce81-1a25-4638-b7a0-eeeba217269f",
+      "name": "Transcribir",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7537753974:AAHNw7eliF0Bb-s81Cn6wz0tGiw0igGi8mc/getFile?file_id={{ $json.message.voice.file_id }}",
+        "options": {}
+      },
+      "id": "358a4760-d651-413e-9917-66e33ad24505",
+      "name": "obtener audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot7537753974:AAHNw7eliF0Bb-s81Cn6wz0tGiw0igGi8mc/{{ $json.result.file_path }}",
+        "options": {}
+      },
+      "id": "ba9e3459-81ed-450f-acb0-db74fcb76540",
+      "name": "descargar_audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot7537753974:AAHNw7eliF0Bb-s81Cn6wz0tGiw0igGi8mc/getFile?file_id={{ $json.message.audio.file_id }}",
+        "options": {}
+      },
+      "id": "263e071d-ad62-4735-86ae-1b052e440379",
+      "name": "obtener audioFile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Accedemos al archivo binario\nlet binaryData = items[0].binary.data;\n\n// Modificamos el nombre del archivo\nbinaryData.fileName = binaryData.fileName.replace(\".oga\", \".ogg\");\n\nreturn items;\n"
+      },
+      "id": "5a91127c-cded-4735-9500-70632e98355f",
+      "name": ".oga a .ogg",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        860
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Accede a la transcripción\nlet transcripcion = $json.text;\n\n// Reemplaza \". \", \"? \", y \"! \" con el salto de línea\ntranscripcion = transcripcion.replace(/\\. /g, '.\\n')\n                             .replace(/\\? /g, '?\\n')\n                             .replace(/\\! /g, '!\\n')\n                              .replace(/\\... /g, '...\\n');\n\n// Asigna la transcripción modificada al campo de salida\nreturn {\n  json: {\n    text: transcripcion\n  }\n};"
+      },
+      "id": "c76cb0b4-7452-41f4-b040-c88fa1766231",
+      "name": "insert \\n",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const maxLength = 4000;\nlet text = $json.text; // Aquí obtienes el texto desde el JSON entrante\n\n// Verificamos si el texto supera el límite\nif (text.length > maxLength) {\n    let messages = [];\n    \n    // Dividimos el texto en fragmentos de tamaño permitido\n    while (text.length > maxLength) {\n        messages.push(text.slice(0, maxLength));\n        text = text.slice(maxLength);\n    }\n    messages.push(text); // Agregamos el último fragmento restante\n\n    // Retornamos los mensajes divididos como elementos separados\n    return messages.map((msg) => {\n        return {\n            json: {\n                message: msg\n            }\n        };\n    });\n} else {\n    // Si el texto no supera el límite, simplemente lo enviamos como un solo mensaje\n    return [\n        {\n            json: {\n                message: text\n            }\n        }\n    ];\n}"
+      },
+      "id": "3544ca03-afbd-4abf-bdfc-8a42c8005c6d",
+      "name": "Split message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=## Transcripción:  \n\n{{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d19c120e-93bc-46d2-9af0-b8780dd257cb",
+      "name": "Send Transciption",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        780
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "N0pcO6gXBJY08bqd",
+          "name": "Transcriber"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AudioMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "8655a31e-db1a-4584-b574-0f75b936d569",
+                    "leftValue": "={{ $json.message.audio.file_name }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AudioFile"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "4bde19fb-66fb-4598-8f6c-545f47134f5b",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/resume",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "resumir"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "450c299c-bd30-44dd-9379-a26853fc8ed9",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        100,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "76225408-09e8-4424-a7c5-ac3f9ff44196",
+              "leftValue": "={{ $json.message.reply_to_message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a99161c1-35da-4df5-b3ae-80e2da9f70dc",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        300,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=## Resumen:\n\n{{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d3c2ddc6-231e-405b-b21d-8a1724d66f83",
+      "name": "Send Resume1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1260,
+        1100
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "N0pcO6gXBJY08bqd",
+          "name": "Transcriber"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Actúa como un resumen automático. Responde únicamente con el resumen, sin texto adicional. Asegúrate de que el resumen sea claro, conciso y cubra todos los temas principales, manteniendo el tono y el estilo del mensaje original. Escribe el resumen como si fuese la misma persona que envió el mensaje, pero en un formato más breve y resumido.\n\nEste es el mensaje: \"{{ $json.message.reply_to_message.text.replace('## Transcripción:', '').trim() }}\"\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "63e754de-ee58-41b2-af0b-29b8d0d9e6c5",
+      "name": "OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        700,
+        1100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "0QvA5g8UDy4DPvaS",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Accede a la transcripción\nlet transcripcion = $json.message.content;\n\n// Reemplaza \". \", \"? \", y \"! \" con el salto de línea\ntranscripcion = transcripcion.replace(/\\. /g, '.\\n')\n                             .replace(/\\? /g, '?\\n')\n                             .replace(/\\! /g, '!\\n')\n                              .replace(/\\... /g, '...\\n');\n\n// Asigna la transcripción modificada al campo de salida\nreturn {\n  json: {\n    text: transcripcion\n  }\n};"
+      },
+      "id": "26343b65-5796-445c-a9da-f34058bb7d9f",
+      "name": "insert \\n1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Debes responder a un mensaje con \"/resume\" para resumirlo.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4c310a13-f449-4697-921c-c288f4dd659b",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        1260
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "N0pcO6gXBJY08bqd",
+          "name": "Transcriber"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "obtener audio": {
+      "main": [
+        [
+          {
+            "node": "descargar_audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "descargar_audio": {
+      "main": [
+        [
+          {
+            "node": ".oga a .ogg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribir": {
+      "main": [
+        [
+          {
+            "node": "insert \\n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "obtener audioFile": {
+      "main": [
+        [
+          {
+            "node": "descargar_audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    ".oga a .ogg": {
+      "main": [
+        [
+          {
+            "node": "Transcribir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert \\n": {
+      "main": [
+        [
+          {
+            "node": "Split message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split message": {
+      "main": [
+        [
+          {
+            "node": "Send Transciption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "obtener audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "obtener audioFile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "insert \\n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert \\n1": {
+      "main": [
+        [
+          {
+            "node": "Send Resume1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "Europe/Madrid"
+  },
+  "versionId": "5f7967f5-6c26-445a-89fd-01e9a1eca88f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e52844d72f0ed0b0ba243364614b6203a1bc2eef3fedfff69ea2356c11549e8f"
+  },
+  "id": "B3B1sjgHY6eLnwAE",
+  "tags": [
+    {
+      "createdAt": "2024-08-28T09:05:09.327Z",
+      "updatedAt": "2024-08-28T09:05:09.327Z",
+      "id": "faCLiALBC30cafeK",
+      "name": "Personal"
+    }
+  ]
+}
