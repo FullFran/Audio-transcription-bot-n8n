@@ -8,6 +8,10 @@ This repository contains a Telegram bot integrated with n8n, designed to transcr
 - Summarization: Automatically generates brief summaries of the transcribed text using the openAI API.
 - n8n Integration: Utilizes the powerful n8n workflow automation tool for seamless processing.
 
+Ideal for users who want to quickly extract key information from audio messages without the need to listen to lengthy recordings.
+
 ---
 
-Ideal for users who want to quickly extract key information from audio messages without the need to listen to lengthy recordings.
+## How to use:
+
+Import this template to n8n and change de http request url information with your groq API key and your telegram bot token.
