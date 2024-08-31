@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram Logo" height="60">
   <img src="https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png" alt="n8n Logo" height="60">
-  <img src="https://www.groq.com/wp-content/uploads/2021/04/groq_logo_transparent.png" alt="Groq Logo" height="60">
+  <img src="https://imgs.search.brave.com/2uS7nAH_EFlEowu_StogKFjcd1fdYnrICBIW-aI_skQ/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/Y29tcGFyYWJseS5j/b20vMjczNzY3NjYv/bC82NDQyNDhfbG9n/b19ncm9xLnBuZw" alt="Groq Logo" height="60">
   <img src="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg" alt="OpenAI Logo" height="60">
 </div>
 
@@ -36,17 +36,4 @@
   </ol>
 </div>
 
----
 
-<h3>Resources</h3>
-
-<ul>
-  <li><a href="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" target="_blank">Telegram Logo</a></li>
-  <li><a href="https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png" target="_blank">n8n Logo</a></li>
-  <li><a href="https://www.groq.com/wp-content/uploads/2021/04/groq_logo_transparent.png" target="_blank">Groq Logo</a></li>
-  <li><a href="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg" target="_blank">OpenAI Logo</a></li>
-</ul>
-
----
-
-<p align="center"><strong>Feel free to contribute or raise issues for any bugs or enhancements!</strong></p>
